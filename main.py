@@ -9,7 +9,9 @@ params=['n0', 'h', 'nk', 'a', 'b', 'c']
 
 
 def parser() -> None:
-	'''Парсер для чтения параметров вычисления функции из файла config.txt'''
+	'''
+	Парсер для чтения параметров вычисления функции из файла config.txt
+	'''
 
 	f = open('config.txt', 'r')
 	
@@ -18,7 +20,20 @@ def parser() -> None:
 
 
 def calculate(n0 : float, h : float, nk : float, a : float, b : float, c : float) -> np.array:
-	'''Функция вычисления f(x), согласно варианту'''
+	'''
+	Функция вычисления f(x), согласно варианту
+	
+	Входные параметры функции:
+	n0 - 
+	h - 
+	nk -
+	a - 
+	b - 
+	c - 
+
+	Выходные параметры: 
+	y - 
+	'''
 	
 	# Вычисление количества точек на сетке
 	n = int((nk -n0)/(h))
@@ -31,7 +46,13 @@ def calculate(n0 : float, h : float, nk : float, a : float, b : float, c : float
 	
 	return y
 
-def safe_result(arr):
+def safe_result(arr : np.array):
+	'''
+	Функция сохранения значений массива в файл
+
+	Входные аргументы:
+	arr - Массив значений float размера (1, n)
+	'''
 	f = open('result.txt', 'w')
 
 	for data in arr:
@@ -44,7 +65,7 @@ if __name__ == "__main__":
 		parser()
 	elif len(sys.argv) == 7:
 		for i in range(6):
-			args[params[i]] = sys.argv[i+1]
+			args[params[i]] = float(sys.argv[i+1])
 	else:
 		print("Error")
 		exit()

@@ -1,7 +1,10 @@
 import yfinance as yf
 from pandas import DataFrame
 from datetime import datetime, timedelta
+import logging
 
+
+__logger = logging.getLogger(__name__)
 
 def get_data(company : str, start : str | datetime, end : str | datetime, interval : str) -> DataFrame:
         """
@@ -16,8 +19,17 @@ def get_data(company : str, start : str | datetime, end : str | datetime, interv
         Выходные параметры:
                 historical_data - таблица с акциями компании 
         """
-        ticker = yf.Ticker(company)
-        historical_data = ticker.history(start=start, end=end, interval=interval)
+
+        try:
+                ticker = yf.Ticker(company)
+                historical_data = ticker.history(start=start, end=end, interval=interval)
+                
+        except: 
+                error = RuntimeError(f"Не удалось получить данные компании {company}.")
+                __logger.error(error)
+                raise error
+
+        __logger.info(f"Успешное получение данных {company}")
         historical_data.index = historical_data.index.tz_localize(None)
         return historical_data
 
@@ -33,7 +45,15 @@ def get_last_data(company : str, period : timedelta, interval : str) -> DataFram
         Выходные параметры:
                 historical_data - таблица с акциями компании 
         """
-        ticker = yf.Ticker(company)
-        historical_data = ticker.history(start=datetime.now() - period, end=datetime.now(), interval=interval)
+        
+        try: 
+                ticker = yf.Ticker(company)
+                historical_data = ticker.history(start=datetime.now() - period, end=datetime.now(), interval=interval)
+        except: 
+                error = RuntimeError(f"Не удалось получить данные компании {company}.")
+                __logger.error(error)
+                raise error
+
+        __logger.info(f"Успешное получение данных {company}")
         historical_data.index = historical_data.index.tz_localize(None)
         return historical_data

@@ -4,6 +4,7 @@ import datetime
 from scipy.signal import argrelextrema
 from pandas import DataFrame
 from typing import Callable
+import logging
 
 class Analyzer:
 	'''
@@ -25,6 +26,7 @@ class Analyzer:
 
 		self.data = data
 		self.size = data.shape[0]
+		self.__logger = logging.getLogger(__name__)
 
 	def __str_to_list(func : Callable[[str | list, int], np.ndarray | dict | list]) -> Callable[[list, int], np.ndarray | dict | list]:
 		'''
@@ -84,6 +86,7 @@ class Analyzer:
 				
 		self.__add_result("SMA", columns, sma)
 
+		self.__logger.info("Успешное вычисление скользяшего среднего")
 		return sma
 
 	@__str_to_list
@@ -110,6 +113,7 @@ class Analyzer:
 			
 		self.__add_result("DIFF", columns, diffs)
 
+		self.__logger.info("Успешное вычисление дифференциала.")
 		return diffs
 
 	@__str_to_list
@@ -145,6 +149,7 @@ class Analyzer:
 
 		self.__add_result("ACF", columns, acf)
 		
+		self.__logger.info("Успешное вычисление автокорелляции.")
 		return acf
 
 	def extreme_points(self, columns : str | list, n : int = 20) -> dict:
@@ -161,6 +166,7 @@ class Analyzer:
 
 		extreme_points = {'max': self.max_points(columns, n), 'min': self.min_points(columns, n)}
 		
+		self.__logger.info("Успешное вычисление всех экстремумов.")
 		return extreme_points
 
 	@__str_to_list
@@ -190,6 +196,7 @@ class Analyzer:
 
 		self.__add_result("MAX", columns, data)
 		
+		self.__logger.info("Успешное вычисление максимальных точек.")
 		return maxs
 
 	@__str_to_list
@@ -217,6 +224,8 @@ class Analyzer:
 
 		self.__add_result("MIN", columns, data)
 		
+
+		self.__logger.info("Успешное высисление минимальных точек для компании.")
 		return mins
 
 	def save_data_frame(self, file_name : str) -> None:
@@ -227,6 +236,12 @@ class Analyzer:
 			file_name - название файла, в который сохраняется таблица
 		'''
 		
-		self.data.to_excel(file_name)
-		
+		try:
+			self.data.to_excel(file_name)
+		except:
+			error = RuntimeError("Ошибка записи в файл.")
+			self.__logger.error(error)
+			raise error
+
+		self.__logger.info("Успешная запись в файл.")
 		return

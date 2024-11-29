@@ -3,7 +3,10 @@ import time
 import threading
 import logging
 from pandas import DataFrame
-import yfinance as yf
+from services.service_data import get_data, get_last_data
+
+from datetime import datetime, timedelta
+
 
 class CancellationToken:
     '''
@@ -36,13 +39,14 @@ class ServiceThreads:
     Класс сервиса для выполнения анализа данных.
     '''
 
-    def __init__(self, company: str, period: str):
+    def __init__(self, company: str, period: timedelta, interval : str):
         '''
         Конструктор сервиса.
 
         Входные параметры:
             company - название компании.
             period - период анализа акций
+            interlav - интервал между полученными данными
         '''
 
         self.__cancellation_token = None
@@ -50,6 +54,7 @@ class ServiceThreads:
         self.__thread = None
         self.__company = company
         self.__period = period
+        self.__interval = interval
         self.__logger = logging.getLogger(__name__)
 
     def start(self, columns: str | list, n: int, file_path = 'out.xlsx'):
@@ -59,7 +64,6 @@ class ServiceThreads:
         Входные параметры: 
             columns - названия столбцов, которые необходимо проанализировать.
             file_path - путь к файлу записи результатов.
-            file_path_log - путь к файлу записи логов.
         '''
         
         if self.__thread is not None:
@@ -105,13 +109,13 @@ class ServiceThreads:
                 file_path = 'out.xlsx', 
                 cancellation_token: CancellationToken = CancellationToken()):
 
-        ticker = yf.Ticker(self.__company)
-        historical_data = ticker.history(period=self.__period, interval='1m')
-        historical_data.index = historical_data.index.tz_localize(None)
+        historical_data = get_data(self.__company, datetime.now() - self.__period, datetime.now(), self.__interval)
 
         self.__analyzer = stocks_analyzer.Analyzer(historical_data)
 
         while(not cancellation_token.is_canceled()):
+            historical_data = get_last_data(self.__company, self.__period, self.__interval)
+            
             self.__analyzer.SMA(columns, n)
             self.__analyzer.diff(columns, n)
             self.__analyzer.extreme_points(columns, n)
